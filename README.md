@@ -4,7 +4,7 @@ How to run:
 
 npm install
 
-//Por precaução esse abaixo, para instalar as dependências que normalmente dão erro.
+//Por precaução rodar esse código abaixo, para instalar as dependências que normalmente dão erro.
 
 npm install lucide-react recharts
 
