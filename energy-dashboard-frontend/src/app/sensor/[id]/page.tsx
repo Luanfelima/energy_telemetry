@@ -1,4 +1,4 @@
-"use client";
+"use client"; //Usasse para o UseRouter rodar no lado cliente
 import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { useState } from "react";
