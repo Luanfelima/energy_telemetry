@@ -31,3 +31,6 @@ pip install fastapi uvicorn
 
 //Comando para rodar o backend
 uvicorn app.main:app --reload
+
+
+Caso dê erro no backend, necessário deixar a porta 8000 como pública.

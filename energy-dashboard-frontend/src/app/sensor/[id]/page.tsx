@@ -13,8 +13,8 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-const api = axios.create({
-  baseURL: "http://localhost:8000",
+const api = axios.create({ //essa parte foi trocada pois o frontend não tá conseguindo acessar o backend porque eles estão em ambientes separados dentro desse codespace
+  baseURL: "https://curly-space-doodle-r94vj7xxqwj2x6w-8000.app.github.dev",
 });
 
 export default function SensorPage() {
