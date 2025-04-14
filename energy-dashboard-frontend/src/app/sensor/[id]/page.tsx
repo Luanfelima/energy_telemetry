@@ -1,7 +1,8 @@
-"use client"; //Usasse para o UseRouter rodar no lado cliente
+"use client";
 import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import axios from "axios";
 import {
   BarChart,
   Bar,
@@ -12,60 +13,34 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-// Dados fixos por sensor
-const sensorDataMap: Record<string, { hora: string; potencia: number }[]> = {
-  "01": [
-    { hora: "2025-04-13T08:00", potencia: 110 },
-    { hora: "2025-04-13T10:00", potencia: 125 },
-    { hora: "2025-04-13T12:00", potencia: 140 },
-    { hora: "2025-04-13T14:00", potencia: 155 },
-    { hora: "2025-04-13T16:00", potencia: 150 },
-    { hora: "2025-04-13T18:00", potencia: 138 },
-    { hora: "2025-04-13T20:00", potencia: 125 },
-    { hora: "2025-04-13T22:00", potencia: 115 },
-  ],
-  "02": [
-    { hora: "2025-04-13T08:00", potencia: 130 },
-    { hora: "2025-04-13T10:00", potencia: 145 },
-    { hora: "2025-04-13T12:00", potencia: 160 },
-    { hora: "2025-04-13T14:00", potencia: 170 },
-    { hora: "2025-04-13T16:00", potencia: 168 },
-    { hora: "2025-04-13T18:00", potencia: 152 },
-    { hora: "2025-04-13T20:00", potencia: 138 },
-    { hora: "2025-04-13T22:00", potencia: 128 },
-  ],
-  "03": [
-    { hora: "2025-04-13T08:00", potencia: 95 },
-    { hora: "2025-04-13T10:00", potencia: 110 },
-    { hora: "2025-04-13T12:00", potencia: 125 },
-    { hora: "2025-04-13T14:00", potencia: 140 },
-    { hora: "2025-04-13T16:00", potencia: 135 },
-    { hora: "2025-04-13T18:00", potencia: 120 },
-    { hora: "2025-04-13T20:00", potencia: 105 },
-    { hora: "2025-04-13T22:00", potencia: 100 },
-  ],
-  "04": [
-    { hora: "2025-04-13T08:00", potencia: 5 },
-    { hora: "2025-04-13T10:00", potencia: 20 },
-  ],
-};
+const api = axios.create({
+  baseURL: "http://localhost:8000",
+});
 
 export default function SensorPage() {
   const router = useRouter();
   const { id } = useParams();
   const [startDate, setStartDate] = useState("2025-04-13T08:00");
   const [endDate, setEndDate] = useState("2025-04-13T22:00");
+  const [sensorData, setSensorData] = useState<any[]>([]);
 
-  // Pega os dados específicos do sensor pelo ID (ou vazio se não existir)
-  const allData = sensorDataMap[id as string] || [];
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await api.get(`/summary/${id}`, {
+          params: {
+            start_date: startDate,
+            end_date: endDate,
+          },
+        });
+        setSensorData(response.data);
+      } catch (error) {
+        console.error("Error fetching sensor data:", error);
+      }
+    };
 
-  const filteredData = allData.filter((item) => {
-    const hora = new Date(item.hora).getTime();
-    return (
-      hora >= new Date(startDate).getTime() &&
-      hora <= new Date(endDate).getTime()
-    );
-  });
+    fetchData();
+  }, [id, startDate, endDate]);
 
   return (
     <div className="min-h-screen p-10 text-white min-w-screen">
@@ -102,10 +77,9 @@ export default function SensorPage() {
         </label>
       </div>
 
-      {/* Parte do gráfico */}
       <div className="bg-zinc-800 p-6 rounded-xl shadow-xl">
         <ResponsiveContainer width="100%" height={300}>
-          <BarChart data={filteredData}>
+          <BarChart data={sensorData}>
             <CartesianGrid strokeDasharray="3 3" stroke="#555" />
             <XAxis
               dataKey="hora"
@@ -119,11 +93,13 @@ export default function SensorPage() {
             />
             <YAxis stroke="#aaa" unit="W" />
             <Tooltip
-            cursor={{ fill: "rgba(218,152,29,0.27)" }}
-            contentStyle={{ backgroundColor: "#1e1e1e", border: "1px solid #FFA500", borderRadius: 8 }}
-              labelFormatter={(label) =>
-                new Date(label).toLocaleString("pt-BR")
-              }
+              cursor={{ fill: "rgba(218,152,29,0.27)" }}
+              contentStyle={{
+                backgroundColor: "#1e1e1e",
+                border: "1px solid #FFA500",
+                borderRadius: 8,
+              }}
+              labelFormatter={(label) => new Date(label).toLocaleString("pt-BR")}
             />
             <Bar
               dataKey="potencia"
