@@ -6,7 +6,7 @@ npm install
 
 //Por precaução rodar esta linha abaixo, para instalar as dependências que normalmente dão erro.
 
-npm install lucide-react recharts
+npm install lucide-react recharts axios
 
 
 //Por fim pode rodar o run dev
