@@ -1,58 +1,68 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
-from typing import List
 from fastapi.middleware.cors import CORSMiddleware
+from datetime import datetime
+from typing import List
 
 app = FastAPI()
 
-# Modelo de Telemetria
+# Definindo um modelo de entrada para os dados de telemetria
 class Telemetry(BaseModel):
+    device_id: str
     hora: str
     potencia: float
 
-# Exemplo de dados simulados
-sensor_data = {
-    "01": [
-        {"hora": "2025-04-13T08:00", "potencia": 110},
-        {"hora": "2025-04-13T08:15", "potencia": 125},
-        {"hora": "2025-04-13T08:30", "potencia": 140},
-        {"hora": "2025-04-13T08:45", "potencia": 200},
-        {"hora": "2025-04-13T09:00", "potencia": 150},
-    ],
-    "02": [
-        {"hora": "2025-04-13T12:00", "potencia": 90},
-        {"hora": "2025-04-13T12:15", "potencia": 100},
-        {"hora": "2025-04-13T12:30", "potencia": 200},
-        {"hora": "2025-04-13T12:45", "potencia": 230},
-        {"hora": "2025-04-13T13:00", "potencia": 100},
-    ],
-    "03": [
-        {"hora": "2025-04-13T14:30", "potencia": 50},
-        {"hora": "2025-04-13T14:45", "potencia": 200},
-        {"hora": "2025-04-13T15:00", "potencia": 250},
-        {"hora": "2025-04-13T15:15", "potencia": 200},
-        {"hora": "2025-04-13T15:30", "potencia": 100},
-    ],
-    "04": [
-        {"hora": "2025-04-13T10:00", "potencia": 0},
-        {"hora": "2025-04-13T11:00", "potencia": 0},
-        {"hora": "2025-04-13T12:00", "potencia": 0},
-    ],
-}
+# Lista para armazenar os dados
+telemetry_data: List[Telemetry] = []
 
-@app.get("/summary/{device_id}", response_model=List[Telemetry])
-async def get_telemetry(device_id: str, start_date: str, end_date: str):
-    # Filtrar dados com base nas datas
-    data = sensor_data.get(device_id, [])
-    filtered_data = [
-        entry for entry in data if start_date <= entry["hora"] <= end_date
+# Rota POST para receber os dados de telemetria
+@app.post("/telemetry/")
+async def receive_telemetry(telemetry: Telemetry):
+    # Verificar se já existe um dado de telemetria para o mesmo device_id e hora
+    for data in telemetry_data:
+        if data.device_id == telemetry.device_id and data.hora == telemetry.hora:
+            raise HTTPException(status_code=400, detail="Dados repetidos para o mesmo dispositivo e hora")
+    
+    # Caso não haja repetição, adicionar os dados
+    telemetry_data.append(telemetry)
+    
+    return {"message": "Dados de telemetria recebidos com sucesso", "data": telemetry}
+
+@app.get("/telemetry/")
+async def get_all_telemetry():
+    return telemetry_data
+
+# Rota GET para obter resumo de dados de telemetria para um dispositivo específico
+@app.get("/summary/{device_id}")
+async def get_summary(device_id: str, start_date: str, end_date: str):
+    # Converter as strings para datetime
+    start = datetime.fromisoformat(start_date)
+    end = datetime.fromisoformat(end_date)
+
+    # Filtrar os dados para o dispositivo e dentro do intervalo de datas
+    filtered_data = [data for data in telemetry_data
+                     if data.device_id == device_id and start <= datetime.fromisoformat(data.hora) <= end]
+
+    if not filtered_data:
+        raise HTTPException(status_code=404, detail="Nenhum dado encontrado para o dispositivo no intervalo de datas fornecido.")
+
+    # Preparar os dados para o gráfico
+    graph_data = [
+        {"hora": data.hora, "potencia": data.potencia}
+        for data in filtered_data
     ]
-    return filtered_data
+    
+    return {"device_id": device_id, "start_date": start_date, "end_date": end_date, "data": graph_data}
 
+# Rota GET para verificar se o servidor está funcionando
+@app.get("/")
+async def root():
+    return {"message": "Servidor FastAPI está funcionando!"}
 
+# Permitir CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # ou ["http://localhost:3000"] para ser mais restrito
+    allow_origins=["*"],  # Permitir todas as origens
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

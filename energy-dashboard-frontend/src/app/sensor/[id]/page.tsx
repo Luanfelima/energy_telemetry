@@ -13,35 +13,41 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-const api = axios.create({ //essa parte foi trocada pois o frontend não tá conseguindo acessar o backend porque eles estão em ambientes separados dentro desse codespace
-  baseURL: "https://curly-space-doodle-r94vj7xxqwj2x6w-8000.app.github.dev",
+const api = axios.create({
+  baseURL: process.env.NEXT_PUBLIC_API_URL,
 });
 
 export default function SensorPage() {
   const router = useRouter();
   const { id } = useParams();
   const [startDate, setStartDate] = useState("2025-04-13T08:00");
-  const [endDate, setEndDate] = useState("2025-04-13T22:00");
+  const [endDate, setEndDate] = useState("2025-04-14T22:00");
   const [sensorData, setSensorData] = useState<any[]>([]);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await api.get(`/summary/${id}`, {
-          params: {
-            start_date: startDate,
-            end_date: endDate,
-          },
-        });
-        setSensorData(response.data);
-      } catch (error) {
-        console.error("Error fetching sensor data:", error);
-      }
-    };
+  // Função para buscar os dados do sensor (gráfico)
+  const fetchSensorData = async () => {
+    try {
+      const response = await api.get(`/summary/${id}`, {
+        params: {
+          start_date: startDate,
+          end_date: endDate,
+        },
+      });
+      console.log("Resposta da API:", response);
+  
+      // Atualiza diretamente com os dados da resposta
+      setSensorData(response.data.data); 
+    } catch (error) {
+      console.error("Erro ao buscar dados do sensor:", error);
+    }
+  };
 
-    fetchData();
+  useEffect(() => {
+    // Chama a função para buscar os dados do sensor
+    fetchSensorData();
   }, [id, startDate, endDate]);
 
+  // Renderiza o gráfico e os campos de data
   return (
     <div className="min-h-screen p-10 text-white min-w-screen">
       <button

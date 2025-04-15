@@ -34,8 +34,28 @@ source venv/bin/activate
 pip install fastapi uvicorn 
 
 
-//Comando para rodar o backend
+//Comando para rodar o backend no codespace, fora da pasta app.
+
+uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+
+A porta 8000 que se abrirá deverá ser modificada para visibilidade pública.
+
+https://curly-space-doodle-r94vj7xxqwj2x6w-8000.app.github.dev/docs //Para executar o post e testar os gráficos.
+
+
+
+
+//Comando para rodar o backend fora do codespace, fora da pasta app.
 
 uvicorn app.main:app --reload
 
-A porta 8000 que se abrirá deverá ser modificada para visibilidade pública.
+http://127.0.0.1:8000/docs //Para executar o post e testar os gráficos.
+
+
+
+exemplo de post
+{
+  "device_id": "03",
+  "hora": "2025-04-13T08:30",
+  "potencia": 200.0
+}
