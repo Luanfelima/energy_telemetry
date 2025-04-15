@@ -63,4 +63,4 @@ exemplo de post
 
 Após baixar o código em seu computador, o provavel erro será na parte que o gráfico não irá aparecer na sua tela, favor seguir este caminho: energy-dashboard-frontend/src/app/sensor/[id]/page.tsx -- na linha 30 troque: /summary/${id} para http://127.0.0.1:8000/summary/${id}
 
-Desta forma o gráfico aparecerá normalmente, após ter dado o post
+Desta forma o gráfico aparecerá normalmente, após ter dado o post.
