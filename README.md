@@ -26,7 +26,7 @@ Backend:
 
 python3 -m venv venv
 
-source venv/bin/activate
+venv/bin/activate
 
 
 //Install's do backend
@@ -34,7 +34,7 @@ source venv/bin/activate
 pip install fastapi uvicorn 
 
 
-//Comando para rodar o backend no codespace, fora da pasta app.
+//Comando para rodar o backend no codespace do github, fora da pasta app.
 
 uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 
@@ -55,7 +55,12 @@ http://127.0.0.1:8000/docs //Para executar o post e testar os gráficos.
 
 exemplo de post
 {
-  "device_id": "03",
-  "hora": "2025-04-13T08:30",
+  "device_id": "01",
+  "hora": "2025-04-13T10:30",
   "potencia": 200.0
 }
+
+
+Após baixar o código em seu computador, o provavel erro será na parte que o gráfico não irá aparecer na sua tela, favor seguir este caminho: energy-dashboard-frontend/src/app/sensor/[id]/page.tsx -- na linha 30 troque: /summary/${id} para http://127.0.0.1:8000/summary/${id}
+
+Desta forma o gráfico aparecerá normalmente, após ter dado o post
